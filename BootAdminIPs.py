@@ -8,9 +8,9 @@ This is a temporary script file.
 import os, sys, fcntl, time, argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--bootstrapFile", default='foo.txt')
-parser.add_argument("--mxIP1", default='1.2.3.4')
-parser.add_argument("--mxIP2", default='5.6.7.8')
+parser.add_argument("--bootstrapFile", default='bootstrap.xml')
+parser.add_argument("--mxIP1", default='127.0.0.1')
+parser.add_argument("--mxIP2", default='127.0.0.1')
 
 
 def RemoveAdminIPs(lines):
@@ -26,6 +26,8 @@ def  AddAdminIPs(f, IP1, IP2):
     f.write(' <admin-ip ip=\"' + IP2 + '\"/>\n')        
     f.write("</admin-ips>\n")        
     
+def IsEmpty(line):
+    return line.strip() != ''
 
 try:
     args = parser.parse_args()
@@ -36,10 +38,9 @@ try:
         f = open(args.bootstrapFile, "r+")
         fcntl.flock(f.fileno(), fcntl.LOCK_EX)
         
-        lines = f.readlines()
-        lines = RemoveAdminIPs(lines)
+        lines = list(filter(IsEmpty,f.readlines()))
         assert("</bootstrap>" in lines[-1].strip().lower()) # file must be properly formatted upon opening
-        
+        lines = RemoveAdminIPs(lines)        
         f.seek(0)
         f.writelines(lines[:-1])
         
